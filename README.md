@@ -82,6 +82,10 @@ This command allows you to SSH into the 'myvm' virtual machine.
 ## Example 2  ##
 ### Create Kubernetes cluster for test  ###
 
+Create network
+~~~
+kcli create network -c 192.168.121.0/24 kubernetes
+~~~
 
 Use the following command to create a single node K8s cluster on Ubuntu 20.04
 ~~~
