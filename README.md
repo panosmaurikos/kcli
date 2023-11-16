@@ -230,5 +230,33 @@ nano test.txt
 
 **_NOTE:_**   To be able to properly play the network interface part with cloud-init must have word ubuntu. 
 
+## Example 4  ##
+### Create VM from a Plan ###
+
+Create a plan.
+
+~~~
+nano image.yaml
+
+mycentos:
+ type: image
+ url: https://cloud.centos.org/centos/8-stream/x86_64/images/CentOS-Stream-GenericCloud-8-20210603.0.x86_64.qcow2
+
+vm1:
+  memory: 512
+  numcpus: 2
+  nets: 
+   - default
+  pool: default
+  image: mycentos
+
+
+  kcli plan -f image.yaml myplan
+~~~
+
+Check the vms with:
+~~~
+kcli list vms
+~~~
 
 
