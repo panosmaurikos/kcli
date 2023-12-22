@@ -1,6 +1,7 @@
 ### KCLI ###
 KCLI is a powerful command-line tool designed to enable management of virtual environments, including virtual machines and containers, for various purposes such as development, testing, and production. It allows users to specify the type and quantity of virtual machines and their configurations through a simple configuration file. KCLI automates the setup and management of these virtual machines, saving time and effort. In addition, it offers the ability to start, stop, connect to virtual machines and create snapshots. It supports various virtualization providers and Kubernetes cluster types. Finally, it allows the use of custom templates for virtual machines and integration into workflows and scripts.
 
+![Alt text](image-1.png)
 
 ### Kcli installation ###
 
@@ -42,13 +43,14 @@ These commands add the current user to the 'kvm' and 'libvirt' groups, allowing 
 
 
 
-6.Create a Storage Pool:
+6. Create a Storage Pool:
 ~~~
 kcli create pool -p /var/lib/libvirt/images default
 ~~~
 This command creates a storage pool named 'default' with the path '/var/lib/libvirt/images' to store virtual machine images or others templates.
 
 Now let's see some examples for how to use kcli
+
 
 ## Example 1  ##
 ### Create a Ubuntu VM  ###
@@ -78,63 +80,13 @@ kcli ssh myvm
 ~~~
 This command allows you to SSH into the 'myvm' virtual machine.
 
+**_NOTE:_**  If you want to create a vm with custom resources:
+~~~
+kcli create vm -i ubuntu2204 myvm -p numcpus=5 -p memory=8192 -p disk=20
+~~~
+
 
 ## Example 2  ##
-### Create Kubernetes cluster for test  ###
-
-Create network
-~~~
-kcli create network -c 192.168.121.0/24 kubernetes
-~~~
-
-Use the following command to create a single node K8s cluster on Ubuntu 20.04
-~~~
-kcli create kube generic -P image=ubuntu2204 demok8s
-~~~
-
-You can check the list of available images by running the following command.
-~~~
-kcli list images
-~~~
-If you require a specific Kubernetes version:
-~~~
-kcli create kube generic -P image=ubuntu2204 -P version=1.21 demok8s21
-~~~
-
-If you want to create a cluster with a single worker:
-~~~
-kcli create kube generic -P image=ubuntu2204 -P workers=1 demok8s
-~~~
-You can also create a parameter file and use the same for cluster creation.
-In order to list out all the options, you can run the following command.
-~~~
-kcli info cluster generic 
-~~~
-Create a ‘parameters’ file with the relevant options as per your requirements and then create the cluster.For example, shown below is a sample ‘parameters’ file to create a two-node Kubernetes cluster with Kata containers runtime deployed.
-
-~~~
-cat > k8s_param.yaml << EOF
-api_ip: 192.168.121.100
-cluster: demok8s
-domain: kata.com
-pool: default
-image: ubuntu2204
-ctlplane: 1
-workers: 1
-network: kubernetes
-apps: ["katacontainer"]
-nip: true
-EOF
-~~~
-~~~
-kcli create kube generic --paramfile k8s_param.yaml
-~~~
-Deleting the cluster is simply running the following command.
-~~~
-kcli delete kube denok8s
-~~~
-
-## Example 3  ##
 ### Create VM with custom template ###
 
 We create a vm based on the following profile file and with any cloud image we want.
@@ -173,14 +125,21 @@ ssh -i ~/.kcli/id_rsa ubuntu@ubuntu2
 echo "DEMO" > test2.txt
 ~~~
 
-4. Restart cloud init.(In VM)
+4. Restart cloud init and delete machine-id.(In VM)
 
 ~~~
 sudo -i   
 
-rm -rf /var/lib/cloud/instance*
-
-poweroff
+truncate -s0 /etc/hostname
+hostnamectl set-hostname localhost
+rm /etc/netplan/50-cloud-init.yaml
+truncate -s0 /etc/machine-id
+rm /var/lib/dbus/machine-id
+ln -s /etc/machine-id /var/lib/dbus/machine-id
+cloud-init clean
+truncate -s0 ~/.bash_history
+history -c
+shutdown -h now
 ~~~
 
 5.Export the template.
@@ -219,7 +178,7 @@ kcli -c local create vm -p myotherubuntu ubuntu3
 8. Login with ssh in VM with default user.
 
 ~~~
-ssh -i ~/.kcli/id_rsa ubuntu@ubuntu3
+kcli ubuntu3
 ~~~
 
 9. Check if the file  test.txt exist in the new VM.
@@ -230,10 +189,12 @@ nano test.txt
 
 **_NOTE:_**   To be able to properly play the network interface part with cloud-init must have word ubuntu. 
 
-## Example 4  ##
+## Example 3  ##
 ### Create VM from a Plan ###
 
-Create a plan.
+Plans allow us to build multiple objects like Vms, Containers
+
+1. Create a plan.
 
 ~~~
 nano image.yaml
@@ -251,12 +212,17 @@ vm1:
   image: mycentos
 
 
-  kcli plan -f image.yaml myplan
+  kcli create plan -f image.yaml myplan
 ~~~
 
-Check the vms with:
+2. Check the vms with:
 ~~~
 kcli list vms
 ~~~
 
 
+3. Login with ssh in VM.
+
+~~~
+kcli ssh vm1
+~~~
