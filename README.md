@@ -1,7 +1,8 @@
 ### KCLI ###
 KCLI is a powerful command-line tool designed to enable management of virtual environments, including virtual machines and containers, for various purposes such as development, testing, and production. It allows users to specify the type and quantity of virtual machines and their configurations through a simple configuration file. KCLI automates the setup and management of these virtual machines, saving time and effort. In addition, it offers the ability to start, stop, connect to virtual machines and create snapshots. It supports various virtualization providers and Kubernetes cluster types. Finally, it allows the use of custom templates for virtual machines and integration into workflows and scripts.
 
-![Alt text](image-1.png)
+![kcli](https://github.com/panosmaurikos/kcli/assets/72733593/20ad67f6-2438-4b0a-847b-9ca04f53e311)
+
 
 ### Kcli installation ###
 
